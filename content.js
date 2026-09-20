@@ -58,19 +58,19 @@
     const hint = buildUnfoldHint();
     header.appendChild(button);
     body.insertAdjacentElement("beforebegin", hint);
-    const render = (folded) => {
-      block.classList.toggle("cf-folded", folded);
+    const render = (expanded) => {
+      block.classList.toggle("cf-folded", !expanded);
       const icon = button.querySelector(".cf-toggle-icon");
       const label = button.querySelector(".cf-toggle-label");
-      icon.textContent = folded ? "\u25B8" : "\u25BE";
-      label.textContent = folded ? "Unfold" : "Fold";
-      button.setAttribute("aria-expanded", String(!folded));
-      button.setAttribute("aria-label", folded ? "Unfold code" : "Fold code");
-      button.title = folded ? "Expand code block" : "Collapse code block";
+      icon.textContent = expanded ? "\u25BE" : "\u25B8";
+      label.textContent = expanded ? "Fold" : "Unfold";
+      button.setAttribute("aria-expanded", String(expanded));
+      button.setAttribute("aria-label", expanded ? "Fold code" : "Unfold code");
+      button.title = expanded ? "Collapse code block" : "Expand code block";
     };
     const toggle = () => {
       const nowFolded = !block.classList.contains("cf-folded");
-      render(nowFolded);
+      render(!nowFolded);
       if (!nowFolded) window.dispatchEvent(new Event("resize"));
     };
     button.addEventListener("click", (e) => {

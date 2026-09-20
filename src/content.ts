@@ -60,22 +60,22 @@ function mountBlock(block: HTMLElement, site: SiteDescriptor): void {
   header.appendChild(button);
   body.insertAdjacentElement("beforebegin", hint);
 
-  const render = (folded: boolean): void => {
-    block.classList.toggle("cf-folded", folded);
+  const render = (expanded: boolean): void => {
+    block.classList.toggle("cf-folded", !expanded);
 
     const icon = button.querySelector(".cf-toggle-icon")!;
     const label = button.querySelector(".cf-toggle-label")!;
-    icon.textContent = folded ? "▸" : "▾";
-    label.textContent = folded ? "Unfold" : "Fold";
+    icon.textContent = expanded ? "▾" : "▸";
+    label.textContent = expanded ? "Fold" : "Unfold";
 
-    button.setAttribute("aria-expanded", String(!folded));
-    button.setAttribute("aria-label", folded ? "Unfold code" : "Fold code");
-    button.title = folded ? "Expand code block" : "Collapse code block";
+    button.setAttribute("aria-expanded", String(expanded));
+    button.setAttribute("aria-label", expanded ? "Fold code" : "Unfold code");
+    button.title = expanded ? "Collapse code block" : "Expand code block";
   };
 
   const toggle = (): void => {
     const nowFolded = !block.classList.contains("cf-folded");
-    render(nowFolded);
+    render(!nowFolded);
     // Monaco (Qwen) needs a nudge once its viewport is visible again.
     if (!nowFolded) window.dispatchEvent(new Event("resize"));
   };
@@ -99,7 +99,7 @@ function mountBlock(block: HTMLElement, site: SiteDescriptor): void {
     }
   });
 
-  render(true); // start folded
+  render(true); // start unfolded
 }
 
 function scan(site: SiteDescriptor): void {
