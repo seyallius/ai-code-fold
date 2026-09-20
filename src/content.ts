@@ -3,9 +3,21 @@ import { SITES, type SiteDescriptor } from "./sites";
 const LOG_PREFIX = "[CodeFold]";
 const MOUNTED = "cfMounted";
 
+interface BlockController {
+  readonly block: HTMLElement;
+  fold(): void;
+  unfold(): void;
+}
+
+/**
+ * Registry of every mounted code block on the page. Global toolbar
+ * buttons iterate this. Entries are skipped when their block has been
+ * detached (e.g. after navigating to a different chat).
+ */
+const controllers = new Set<BlockController>();
+
 /* ------------------------------------------------------------------ *
- * UI builders — small, pure, no interfaces because there's nothing
- * to swap. They return the element they built.
+ * UI builders
  * ------------------------------------------------------------------ */
 
 function buildToggleButton(): HTMLButtonElement {
@@ -44,8 +56,37 @@ function buildUnfoldHint(): HTMLDivElement {
   return hint;
 }
 
+function buildGlobalToolbar(): HTMLDivElement {
+  const bar = document.createElement("div");
+  bar.className = "cf-global-toolbar";
+
+  const foldAll = document.createElement("button");
+  foldAll.type = "button";
+  foldAll.className = "cf-global-btn";
+  foldAll.textContent = "Fold all";
+  foldAll.title = "Collapse every code block on this page";
+  foldAll.addEventListener("click", () => {
+    for (const c of controllers) if (c.block.isConnected) c.fold();
+  });
+
+  const unfoldAll = document.createElement("button");
+  unfoldAll.type = "button";
+  unfoldAll.className = "cf-global-btn";
+  unfoldAll.textContent = "Unfold all";
+  unfoldAll.title = "Expand every code block on this page";
+  unfoldAll.addEventListener("click", () => {
+    for (const c of controllers) if (c.block.isConnected) c.unfold();
+    // One resize for the whole page is enough — Monaco redraws all
+    // visible viewports from a single event.
+    window.dispatchEvent(new Event("resize"));
+  });
+
+  bar.append(foldAll, unfoldAll);
+  return bar;
+}
+
 /* ------------------------------------------------------------------ *
- * Per-block wiring.
+ * Per-block wiring
  * ------------------------------------------------------------------ */
 
 function mountBlock(block: HTMLElement, site: SiteDescriptor): void {
@@ -74,10 +115,10 @@ function mountBlock(block: HTMLElement, site: SiteDescriptor): void {
   };
 
   const toggle = (): void => {
-    const nowFolded = !block.classList.contains("cf-folded");
-    render(!nowFolded);
-    // Monaco (Qwen) needs a nudge once its viewport is visible again.
-    if (!nowFolded) window.dispatchEvent(new Event("resize"));
+    const currentlyExpanded = !block.classList.contains("cf-folded");
+    const nowExpanded = !currentlyExpanded;
+    render(nowExpanded);
+    if (nowExpanded) window.dispatchEvent(new Event("resize"));
   };
 
   button.addEventListener("click", (e) => {
@@ -99,7 +140,13 @@ function mountBlock(block: HTMLElement, site: SiteDescriptor): void {
     }
   });
 
-  render(true); // start unfolded
+  render(true); // start expanded
+
+  controllers.add({
+    block,
+    fold: () => render(false),
+    unfold: () => render(true),
+  });
 }
 
 function scan(site: SiteDescriptor): void {
@@ -111,7 +158,7 @@ function scan(site: SiteDescriptor): void {
 }
 
 /* ------------------------------------------------------------------ *
- * Bootstrap.
+ * Bootstrap
  * ------------------------------------------------------------------ */
 
 function main(): void {
@@ -120,6 +167,10 @@ function main(): void {
   if (!site) return;
 
   console.log(`${LOG_PREFIX} Activated for ${site.id} on ${host}`);
+
+  // Mount the toolbar once, up front. It works even when there are no
+  // blocks yet (both buttons simply no-op).
+  document.body.appendChild(buildGlobalToolbar());
 
   const runScan = (): void => scan(site);
   runScan();

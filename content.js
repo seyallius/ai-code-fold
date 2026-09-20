@@ -21,6 +21,7 @@
   // src/content.ts
   var LOG_PREFIX = "[CodeFold]";
   var MOUNTED = "cfMounted";
+  var controllers = /* @__PURE__ */ new Set();
   function buildToggleButton() {
     const btn = document.createElement("button");
     btn.type = "button";
@@ -49,6 +50,29 @@
     hint.append(icon, text);
     return hint;
   }
+  function buildGlobalToolbar() {
+    const bar = document.createElement("div");
+    bar.className = "cf-global-toolbar";
+    const foldAll = document.createElement("button");
+    foldAll.type = "button";
+    foldAll.className = "cf-global-btn";
+    foldAll.textContent = "Fold all";
+    foldAll.title = "Collapse every code block on this page";
+    foldAll.addEventListener("click", () => {
+      for (const c of controllers) if (c.block.isConnected) c.fold();
+    });
+    const unfoldAll = document.createElement("button");
+    unfoldAll.type = "button";
+    unfoldAll.className = "cf-global-btn";
+    unfoldAll.textContent = "Unfold all";
+    unfoldAll.title = "Expand every code block on this page";
+    unfoldAll.addEventListener("click", () => {
+      for (const c of controllers) if (c.block.isConnected) c.unfold();
+      window.dispatchEvent(new Event("resize"));
+    });
+    bar.append(foldAll, unfoldAll);
+    return bar;
+  }
   function mountBlock(block, site) {
     const header = block.querySelector(site.headerSelector);
     const body = block.querySelector(site.bodySelector);
@@ -69,9 +93,10 @@
       button.title = expanded ? "Collapse code block" : "Expand code block";
     };
     const toggle = () => {
-      const nowFolded = !block.classList.contains("cf-folded");
-      render(!nowFolded);
-      if (!nowFolded) window.dispatchEvent(new Event("resize"));
+      const currentlyExpanded = !block.classList.contains("cf-folded");
+      const nowExpanded = !currentlyExpanded;
+      render(nowExpanded);
+      if (nowExpanded) window.dispatchEvent(new Event("resize"));
     };
     button.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -90,6 +115,11 @@
       }
     });
     render(true);
+    controllers.add({
+      block,
+      fold: () => render(false),
+      unfold: () => render(true)
+    });
   }
   function scan(site) {
     const blocks = document.querySelectorAll(site.blockSelector);
@@ -103,6 +133,7 @@
     const site = SITES.find((s) => s.match(host));
     if (!site) return;
     console.log(`${LOG_PREFIX} Activated for ${site.id} on ${host}`);
+    document.body.appendChild(buildGlobalToolbar());
     const runScan = () => scan(site);
     runScan();
     new MutationObserver(runScan).observe(document.body, {
