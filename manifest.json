@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Code Fold for AI Chats",
+  "version": "1.0.0",
+  "description": "Auto-fold code blocks on Qwen and DeepSeek.",
+  "content_scripts": [
+    {
+      "matches": [
+        "*://chat.qwen.ai/*",
+        "*://qwen.ai/*",
+        "*://tongyi.aliyun.com/*",
+        "*://chat.deepseek.com/*"
+      ],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "code-fold@local",
+      "strict_min_version": "115.0"
+    }
+  }
+}
