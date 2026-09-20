@@ -1,0 +1,12 @@
+{
+  "name": "code-fold",
+  "private": true,
+  "scripts": {
+    "build": "esbuild src/content.ts --bundle --outfile=content.js --format=iife --target=firefox115",
+    "watch": "npm run build -- --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "typescript": "^5.6.0"
+  }
+}

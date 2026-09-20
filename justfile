@@ -16,10 +16,12 @@ default:
 # Development
 # ------------------------------------------------------------------------------
 
-# Zip the contents.
+# Build + zip the extension for loading via about:debugging.
 [group('Development')]
 [linux]
 zip zipname="code-fold":
+    npx tsc --noEmit
+    npm run build
     zip -r ../{{zipname}}.zip manifest.json content.js styles.css
 
 # Check the zip the contents.
