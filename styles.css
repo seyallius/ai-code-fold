@@ -1,37 +1,103 @@
-/* Fold button inserted into code headers */
+/* ==========================================================================
+   Toggle button (lives in the code block header)
+   ========================================================================== */
+
 .cf-toggle-btn {
-    background: transparent;
-    border: 1px solid rgba(128, 128, 128, 0.4);
-    border-radius: 4px;
-    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    margin-left: 8px;
+    padding: 4px 10px;
+
+    font: inherit;
     font-size: 11px;
     font-weight: 500;
     line-height: 1;
-    padding: 3px 7px;
-    margin-left: 8px;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+
+    color: inherit;
+    background: transparent;
+    border: 1px solid rgba(128, 128, 128, 0.28);
+    border-radius: 999px;
+
     cursor: pointer;
     opacity: 0.8;
     transition:
         opacity 0.15s ease,
-        background 0.15s ease;
+        background 0.15s ease,
+        border-color 0.15s ease;
 }
 
 .cf-toggle-btn:hover {
     opacity: 1;
-    background: rgba(128, 128, 128, 0.15);
+    background: rgba(128, 128, 128, 0.12);
+    border-color: rgba(128, 128, 128, 0.5);
 }
 
-/* Hide Qwen Monaco body when folded */
+.cf-toggle-btn:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+.cf-toggle-icon {
+    display: inline-block;
+    font-size: 10px;
+    line-height: 1;
+}
+
+/* ==========================================================================
+   "Click to unfold" placeholder — replaces the hidden code body
+   ========================================================================== */
+
+.cf-unfold-hint {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    padding: 22px 16px;
+
+    font-size: 12px;
+    font-style: italic;
+    letter-spacing: 0.02em;
+    color: rgba(128, 128, 128, 0.55);
+
+    cursor: pointer;
+    user-select: none;
+
+    transition: color 0.15s ease;
+}
+
+.cf-unfold-hint:hover,
+.cf-unfold-hint:focus-visible {
+    color: rgba(128, 128, 128, 0.95);
+    outline: none;
+}
+
+.cf-unfold-hint-icon {
+    display: inline-block;
+    font-size: 9px;
+    line-height: 1;
+    opacity: 0.8;
+}
+
+div.md-code-block.cf-folded .cf-unfold-hint,
+pre.qwen-markdown-code.cf-folded .cf-unfold-hint {
+    display: flex;
+}
+
+/* ==========================================================================
+   Fold behaviour — hide the code body while folded
+   ========================================================================== */
+
 pre.qwen-markdown-code.cf-folded .qwen-markdown-code-body {
     display: none !important;
 }
 
-/* Hide DeepSeek pre block when folded */
+/* DeepSeek: only the <pre>. We deliberately keep the decorative <svg>
+   corners visible so the block's rounded shell is preserved. */
 div.md-code-block.cf-folded > pre {
-    display: none !important;
-}
-
-/* Hide DeepSeek decorative borders/SVGs */
-div.md-code-block.cf-folded > svg {
     display: none !important;
 }
